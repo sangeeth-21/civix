@@ -1,0 +1,992 @@
+[
+  {
+    "_id": {
+      "$oid": "687ad52ec743766c05bec4c1"
+    },
+    "name": "John Smith",
+    "email": "john.smith@example.com",
+    "password": "$2b$10$NsbNV76YFx2Qj9x0XyE4cedbP.MpJ0ApPx7Hd9c4euP7tKALVAjEW",
+    "role": "USER",
+    "phone": "+1-555-0101",
+    "address": "123 Main Street, New York, NY 10001",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": true,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-15T10:30:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-15T10:30:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687ad52ec743766c05bec4c2"
+    },
+    "name": "Sarah Johnson",
+    "email": "sarah.johnson@example.com",
+    "password": "$2b$10$rwbo2T6Nh9P7uwCe4/YMbemFPHTt/9IJ8RoOWKsR/9FXQDVzatVwq",
+    "role": "USER",
+    "phone": "+1-555-0102",
+    "address": "456 Oak Avenue, Los Angeles, CA 90210",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": true,
+        "marketing": true,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "dark",
+        "fontSize": "large",
+        "reduceAnimations": true,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "contacts",
+        "shareBookingHistory": true,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-16T14:20:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-16T14:20:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687ad52ec743766c05bec4c3"
+    },
+    "name": "Michael Brown",
+    "email": "michael.brown@example.com",
+    "password": "$2b$10$jjRBEV9hpmaOQ76KvP2bsOSB4De9yKjwWqDXdscVLa9jdYAP.1A86",
+    "role": "USER",
+    "phone": "+1-555-0103",
+    "address": "789 Pine Street, Chicago, IL 60601",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": false,
+        "sms": true,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "light",
+        "fontSize": "small",
+        "reduceAnimations": false,
+        "highContrast": true
+      },
+      "privacy": {
+        "profileVisibility": "private",
+        "shareBookingHistory": false,
+        "shareContactInfo": false,
+        "allowDataCollection": false
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-17T09:15:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-17T09:15:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687ad52ec743766c05bec4c4"
+    },
+    "name": "Rajesh Kumar",
+    "email": "rajesh.civix.in@gmail.com",
+    "password": "$2b$10$rwbo2T6Nh9P7uwCe4/YMbemFPHTt/9IJ8RoOWKsR/9FXQDVzatVwq",
+    "role": "AGENT",
+    "phone": "9876543210",
+    "state": "Tamil Nadu",
+    "experience": "7 years",
+    "specialization": "electrical works, plumbing",
+    "rating": 4.7,
+    "totalJobs": 150,
+    "isVerified": true,
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": true,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-07-18T23:13:50.051Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-18T23:13:50.051Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687ad52ec743766c05bec4c5"
+    },
+    "name": "Priya Sharma",
+    "email": "priya.civix.in@gmail.com",
+    "password": "$2b$10$jjRBEV9hpmaOQ76KvP2bsOSB4De9yKjwWqDXdscVLa9jdYAP.1A86",
+    "role": "AGENT",
+    "phone": "9876123450",
+    "state": "Tamil Nadu",
+    "experience": "4 years",
+    "specialization": "painting, waterproofing",
+    "rating": 4.6,
+    "totalJobs": 110,
+    "isVerified": true,
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": true,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-07-18T23:13:50.052Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-18T23:13:50.052Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687ad52ec743766c05bec4c6"
+    },
+    "name": "Sabari",
+    "email": "civix.in@gmail.com",
+    "password": "$2b$10$NsbNV76YFx2Qj9x0XyE4cedbP.MpJ0ApPx7Hd9c4euP7tKALVAjEW",
+    "role": "AGENT",
+    "phone": "9150438485",
+    "state": "Tamil Nadu",
+    "experience": "5 years",
+    "specialization": "plumbing, painting, electrical",
+    "rating": 4.5,
+    "totalJobs": 120,
+    "isVerified": true,
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": true,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-07-18T23:13:50.053Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-19T20:34:20.103Z"
+    },
+    "__v": 0,
+    "lastLogin": {
+      "$date": "2025-07-19T20:34:20.101Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "687ad52ec743766c05bec4c7"
+    },
+    "name": "Anand Patel",
+    "email": "anand.civix.in@gmail.com",
+    "password": "$2b$10$j1pGBqHPfE1VTSYJMiNpsukmZcObsZyEtkYMF2ainD8Cy0kTj/81S",
+    "role": "AGENT",
+    "phone": "9988776655",
+    "state": "Tamil Nadu",
+    "experience": "3 years",
+    "specialization": "crack works, tile grouting",
+    "rating": 4.2,
+    "totalJobs": 80,
+    "isVerified": true,
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": true,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-07-18T23:13:50.236Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-18T23:13:50.236Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687ad52ec743766c05bec4c8"
+    },
+    "name": "Sreejith",
+    "email": "sreejithhere7@gmail.com",
+    "password": "$2b$10$4irLFivsPPQOo1jc3xcBZOpN9Y9VkENGB40QKuM8q4rzcgj26pvAe",
+    "role": "AGENT",
+    "phone": "9345329577",
+    "state": "Tamil Nadu",
+    "experience": "5 years",
+    "specialization": "terrace cooling coating, waterproofing",
+    "rating": 4.5,
+    "totalJobs": 120,
+    "isVerified": true,
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": true,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-07-18T23:13:50.237Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-18T23:13:50.237Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687ad52ec743766c05bec4c9"
+    },
+    "name": "David Wilson",
+    "email": "david.wilson@example.com",
+    "password": "$2b$10$K4vf1Jm4H9Fu5pvWhkJCruB4a6zhf/v2LPJ6tXACJ9Vev6rUExNcS",
+    "role": "AGENT",
+    "phone": "+1-555-0201",
+    "address": "321 Service Lane, Miami, FL 33101",
+    "experience": "8 years",
+    "specialization": "HVAC, electrical, plumbing",
+    "rating": 4.8,
+    "totalJobs": 200,
+    "isVerified": true,
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": true,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "dark",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": true,
+        "shareContactInfo": true,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-18T11:45:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-18T11:45:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687ad52ec743766c05bec4ca"
+    },
+    "name": "Lisa Chen",
+    "email": "lisa.chen@example.com",
+    "password": "$2b$10$tcwiWKeudMZ3drWzXGBRteBDqd2qquDjAFErApEKeATErEj1QzN5S",
+    "role": "AGENT",
+    "phone": "+1-555-0202",
+    "address": "654 Professional Drive, Seattle, WA 98101",
+    "experience": "6 years",
+    "specialization": "cleaning, organizing, maintenance",
+    "rating": 4.9,
+    "totalJobs": 180,
+    "isVerified": true,
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": true,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "light",
+        "fontSize": "large",
+        "reduceAnimations": true,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": true,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-19T16:30:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-19T16:30:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0eaa23a0c161667b8d"
+    },
+    "name": "System Administrator",
+    "email": "admin@civix.com",
+    "password": "$2b$10$bSXGCxnGNsnNqmqr8TGRX.oX8gdCItvh5QclMAZgDpwTi/TvQ.m7y",
+    "role": "ADMIN",
+    "phone": "+1-555-0101",
+    "address": "123 Admin Street, Tech City, TC 12345",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-07-20T05:09:34.725Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-20T05:15:14.201Z"
+    },
+    "__v": 0,
+    "lastLogin": {
+      "$date": "2025-07-20T05:15:14.200Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0eaa23a0c161667b93"
+    },
+    "name": "Operations Manager",
+    "email": "operations@civix.com",
+    "password": "$2b$10$Yht6etzKx8idb5KbPzHsUuhzAYp0aDWBxPVrw3YOTyS2QewPaP.zm",
+    "role": "ADMIN",
+    "phone": "+1-555-0102",
+    "address": "456 Operations Ave, Business District, BD 67890",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-07-20T05:09:34.812Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-20T05:09:34.812Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0eaa23a0c161667b96"
+    },
+    "name": "Support Manager",
+    "email": "support@civix.com",
+    "password": "$2b$10$4fBkB5U7UkSNJUmmv0vJL.ZXr07K1gMsNt1INGp8sD0vkT560.xwC",
+    "role": "ADMIN",
+    "phone": "+1-555-0103",
+    "address": "789 Support Blvd, Help Center, HC 11111",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-07-20T05:09:34.911Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-20T05:09:34.911Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0eaa23a0c161667b97"
+    },
+    "name": "Technical Lead",
+    "email": "tech.lead@civix.com",
+    "password": "$2b$10$5gCkB6V8VlTOKLVnw1wKM.YYr18L2hNt2INGq9sE1vkT671.xwD",
+    "role": "ADMIN",
+    "phone": "+1-555-0104",
+    "address": "321 Tech Road, Development Zone, DZ 22222",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": true,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "dark",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-20T08:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-20T08:00:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0eaa23a0c161667b98"
+    },
+    "name": "Customer Success Manager",
+    "email": "csm@civix.com",
+    "password": "$2b$10$6hDlC7W9WmUPLMWox2xLN.ZZs29M3iOu3JOHr0tF2wWlU782.yxE",
+    "role": "ADMIN",
+    "phone": "+1-555-0105",
+    "address": "654 Success Street, Customer Hub, CH 33333",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": true,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "light",
+        "fontSize": "large",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": true,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-21T12:30:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-21T12:30:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0faa23a0c161667b99"
+    },
+    "name": "Super Administrator",
+    "email": "superadmin@civix.com",
+    "password": "$2b$10$K4vf1Jm4H9Fu5pvWhkJCruB4a6zhf/v2LPJ6tXACJ9Vev6rUExNcS",
+    "role": "SUPER_ADMIN",
+    "phone": "+1-555-0001",
+    "address": "999 Super Admin Plaza, Executive District, ED 00000",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-07-20T05:09:35.008Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-20T05:13:11.010Z"
+    },
+    "__v": 0,
+    "lastLogin": {
+      "$date": "2025-07-20T05:13:11.009Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0faa23a0c161667b9c"
+    },
+    "name": "System Owner",
+    "email": "owner@civix.com",
+    "password": "$2b$10$tcwiWKeudMZ3drWzXGBRteBDqd2qquDjAFErApEKeATErEj1QzN5S",
+    "role": "SUPER_ADMIN",
+    "phone": "+1-555-0002",
+    "address": "888 Owner Tower, Corporate Center, CC 99999",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": false,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-07-20T05:09:35.093Z"
+    },
+    "updatedAt": {
+      "$date": "2025-07-20T05:09:35.093Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0faa23a0c161667b9d"
+    },
+    "name": "Chief Technology Officer",
+    "email": "cto@civix.com",
+    "password": "$2b$10$7iEmD8X0XnVQMNWpy3yMO.AAt30N4jPv4KPIr1uG3xXmV893.zxF",
+    "role": "SUPER_ADMIN",
+    "phone": "+1-555-0003",
+    "address": "777 CTO Building, Innovation District, ID 11111",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": true,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "dark",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "private",
+        "shareBookingHistory": false,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-22T15:45:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-22T15:45:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0faa23a0c161667b9e"
+    },
+    "name": "Chief Executive Officer",
+    "email": "ceo@civix.com",
+    "password": "$2b$10$8jFnE9Y1YoWRNOXqz4zNP.BBu41O5kQw5LQJs2vH4yYNW904.AyG",
+    "role": "SUPER_ADMIN",
+    "phone": "+1-555-0004",
+    "address": "666 CEO Tower, Executive Plaza, EP 22222",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": true,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "light",
+        "fontSize": "large",
+        "reduceAnimations": true,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": true,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-23T10:15:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-23T10:15:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0faa23a0c161667b9f"
+    },
+    "name": "Emily Davis",
+    "email": "emily.davis@example.com",
+    "password": "$2b$10$9kGoF0Z2ZpXSOOYr5a0OQ.CCv52P6lRx6MRKt3wI5zXOW015.BzH",
+    "role": "USER",
+    "phone": "+1-555-0104",
+    "address": "987 Maple Street, Boston, MA 02101",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": true,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "contacts",
+        "shareBookingHistory": true,
+        "shareContactInfo": true,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-24T13:20:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-24T13:20:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0faa23a0c161667ba0"
+    },
+    "name": "Robert Taylor",
+    "email": "robert.taylor@example.com",
+    "password": "$2b$10$0lHpG1A3AqYTPPZs6b1PR.DDw63Q7mSy7NSLu4xJ6aYPX126.CaI",
+    "role": "USER",
+    "phone": "+1-555-0105",
+    "address": "456 Elm Avenue, Denver, CO 80201",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": false,
+        "sms": true,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "dark",
+        "fontSize": "small",
+        "reduceAnimations": true,
+        "highContrast": true
+      },
+      "privacy": {
+        "profileVisibility": "private",
+        "shareBookingHistory": false,
+        "shareContactInfo": false,
+        "allowDataCollection": false
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-25T16:40:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-25T16:40:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0faa23a0c161667ba1"
+    },
+    "name": "Maria Garcia",
+    "email": "maria.garcia@example.com",
+    "password": "$2b$10$1mIqH2B4BrZUPQat7c2QS.EEx74R8nTz8OTMv5yK7bZQY237.DbJ",
+    "role": "USER",
+    "phone": "+1-555-0106",
+    "address": "789 Cedar Lane, Phoenix, AZ 85001",
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": true,
+        "marketing": true,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "light",
+        "fontSize": "large",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": true,
+        "shareContactInfo": true,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-26T09:10:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-26T09:10:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0faa23a0c161667ba2"
+    },
+    "name": "James Anderson",
+    "email": "james.anderson@example.com",
+    "password": "$2b$10$2nJrI3C5CsAVQPBt8d3RT.FFy85S9oUa9PUNNw6zL8cARX348.EcK",
+    "role": "AGENT",
+    "phone": "+1-555-0203",
+    "address": "147 Contractor Way, Austin, TX 73301",
+    "experience": "10 years",
+    "specialization": "construction, renovation, repairs",
+    "rating": 4.9,
+    "totalJobs": 250,
+    "isVerified": true,
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": true,
+        "marketing": false,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "system",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": true,
+        "shareContactInfo": true,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-27T14:25:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-27T14:25:00.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "687c7a0faa23a0c161667ba3"
+    },
+    "name": "Jennifer Lee",
+    "email": "jennifer.lee@example.com",
+    "password": "$2b$10$3oKsJ4D6DtBWVRQu9e4SU.GGz96T0pVb0QVOO7aM9dBSY459.FdL",
+    "role": "AGENT",
+    "phone": "+1-555-0204",
+    "address": "258 Service Road, Portland, OR 97201",
+    "experience": "4 years",
+    "specialization": "landscaping, gardening, outdoor maintenance",
+    "rating": 4.7,
+    "totalJobs": 95,
+    "isVerified": true,
+    "isActive": true,
+    "settings": {
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "marketing": true,
+        "reminders": true
+      },
+      "appearance": {
+        "theme": "light",
+        "fontSize": "medium",
+        "reduceAnimations": false,
+        "highContrast": false
+      },
+      "privacy": {
+        "profileVisibility": "public",
+        "shareBookingHistory": true,
+        "shareContactInfo": false,
+        "allowDataCollection": true
+      }
+    },
+    "createdAt": {
+      "$date": "2025-01-28T11:35:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2025-01-28T11:35:00.000Z"
+    },
+    "__v": 0
+  }
+]

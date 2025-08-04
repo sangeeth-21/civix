@@ -1,0 +1,31 @@
+module.exports = {
+  apps: [
+    {
+      name: "civix-app",
+      script: "./standalone/server.js",
+      cwd: "/home/ubuntu/civix_alpha_v.0",
+      env: {
+        NODE_ENV: "production",
+        PORT: 3000,
+        NEXTAUTH_URL: "https://civix.in",
+        NEXT_PUBLIC_APP_URL: "https://civix.in",
+        NEXT_PUBLIC_SITE_URL: "https://civix.in",
+        MONGODB_URI: "mongodb://localhost:27017/civix_fInal_production",
+        AUTH_SECRET: "b1cfc457b388448d0e10d6ce33874ee82b69b0b916d997849aa41eaa4240c08d",
+        NEXTAUTH_SECRET: "56aa928b56b64992ee25ec9a438c056f57b79ce28f504db9a84e8dfbf34e34ac",
+        NEXTAUTH_DEBUG: "false",
+        SMTP_HOST: "smtp.gmail.com",
+        SMTP_PORT: "587",
+        SMTP_USER: "civix.devteam@gmail.com",
+        SMTP_PASS: "ghsr emqx kkkv wpxz",
+      },
+      watch: false,
+      autorestart: true,
+      max_memory_restart: "512M",
+      log_file: "/home/ubuntu/logs/civix-app.log",
+      error_file: "/home/ubuntu/logs/civix-app-error.log",
+      out_file: "/home/ubuntu/logs/civix-app-out.log",
+      merge_logs: true,
+    },
+  ],
+};
