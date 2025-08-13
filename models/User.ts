@@ -1,7 +1,7 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
 import bcrypt from "bcryptjs";
+import { executeQuery } from "@/lib/mysql";
 
-// Settings interfaces
+// User interfaces
 export interface INotificationSettings {
   email: boolean;
   sms: boolean;
@@ -29,7 +29,8 @@ export interface IUserSettings {
   privacy: IPrivacySettings;
 }
 
-export interface IUser extends Document {
+export interface IUser {
+  id: number;
   name: string;
   email: string;
   password: string;
@@ -37,98 +38,211 @@ export interface IUser extends Document {
   phone?: string;
   address?: string;
   isActive: boolean;
-  settings?: IUserSettings;
+  settings?: string; // JSON string
   lastLogin?: Date;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-// Settings schemas
-const NotificationSettingsSchema = new Schema<INotificationSettings>({
-  email: { type: Boolean, default: true },
-  sms: { type: Boolean, default: false },
-  marketing: { type: Boolean, default: false },
-  reminders: { type: Boolean, default: true }
-}, { _id: false });
-
-const AppearanceSettingsSchema = new Schema<IAppearanceSettings>({
-  theme: { type: String, enum: ['light', 'dark', 'system'], default: 'system' },
-  fontSize: { type: String, enum: ['small', 'medium', 'large'], default: 'medium' },
-  reduceAnimations: { type: Boolean, default: false },
-  highContrast: { type: Boolean, default: false }
-}, { _id: false });
-
-const PrivacySettingsSchema = new Schema<IPrivacySettings>({
-  profileVisibility: { type: String, enum: ['public', 'contacts', 'private'], default: 'public' },
-  shareBookingHistory: { type: Boolean, default: false },
-  shareContactInfo: { type: Boolean, default: false },
-  allowDataCollection: { type: Boolean, default: true }
-}, { _id: false });
-
-const UserSettingsSchema = new Schema<IUserSettings>({
-  notifications: { type: NotificationSettingsSchema, default: () => ({}) },
-  appearance: { type: AppearanceSettingsSchema, default: () => ({}) },
-  privacy: { type: PrivacySettingsSchema, default: () => ({}) }
-}, { _id: false });
-
-const UserSchema = new Schema<IUser>(
-  {
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    password: { type: String, required: true },
-    role: {
-      type: String,
-      required: true,
-      enum: ["USER", "AGENT", "ADMIN", "SUPER_ADMIN"],
-      default: "USER"
-    },
-    phone: { type: String },
-    address: { type: String },
-    isActive: { type: Boolean, default: true },
-    settings: { type: UserSettingsSchema, default: () => ({}) },
-    lastLogin: { type: Date },
-    resetPasswordToken: { type: String },
-    resetPasswordExpires: { type: Date },
-  },
-  { timestamps: true }
-);
-
-// Hash password before saving
-UserSchema.pre("save", async function(next) {
-  if (!this.isModified("password")) return next();
-  
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error: any) {
-    next(error);
+export class User {
+  // Create a new user
+  static async create(userData: Omit<IUser, 'id' | 'createdAt' | 'updatedAt'>): Promise<IUser> {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    
+    const query = `
+      INSERT INTO users (
+        name, email, password, role, phone, address, isActive, 
+        settings, resetPasswordToken, resetPasswordExpires
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    const params = [
+      userData.name,
+      userData.email,
+      hashedPassword,
+      userData.role || 'USER',
+      userData.phone || null,
+      userData.address || null,
+      userData.isActive !== false ? 1 : 0,
+      userData.settings ? JSON.stringify(userData.settings) : null,
+      userData.resetPasswordToken || null,
+      userData.resetPasswordExpires || null
+    ];
+    
+    const result: any = await executeQuery(query, params);
+    return await User.findById(result.insertId);
   }
-});
 
-// Compare password method
-UserSchema.methods.comparePassword = async function(candidatePassword: string) {
-  return bcrypt.compare(candidatePassword, this.password);
-};
+  // Find user by ID
+  static async findById(id: number): Promise<IUser | null> {
+    const query = 'SELECT * FROM users WHERE id = ?';
+    const users: IUser[] = await executeQuery(query, [id]);
+    
+    if (users.length === 0) return null;
+    
+    const user = users[0];
+    if (user.settings && typeof user.settings === 'string') {
+      try {
+        user.settings = JSON.parse(user.settings);
+      } catch {
+        user.settings = undefined;
+      }
+    }
+    
+    return user;
+  }
 
-// Only run indexing on server side to avoid browser warnings
-if (typeof window === 'undefined') {
-  // Create indexes for better query performance
-  UserSchema.index({ email: 1 }, { unique: true });
-  UserSchema.index({ role: 1 });
-  UserSchema.index({ resetPasswordToken: 1 });
-}
+  // Find user by email
+  static async findByEmail(email: string): Promise<IUser | null> {
+    const query = 'SELECT * FROM users WHERE email = ?';
+    const users: IUser[] = await executeQuery(query, [email]);
+    
+    if (users.length === 0) return null;
+    
+    const user = users[0];
+    if (user.settings && typeof user.settings === 'string') {
+      try {
+        user.settings = JSON.parse(user.settings);
+      } catch {
+        user.settings = undefined;
+      }
+    }
+    
+    return user;
+  }
 
-// Prevent model compilation error in development due to hot reloading
-let User: Model<IUser>;
+  // Find users with filters and pagination
+  static async find(
+    filters: {
+      role?: string;
+      search?: string;
+      isActive?: boolean;
+    } = {},
+    options: {
+      page?: number;
+      limit?: number;
+      sort?: string;
+      order?: 'ASC' | 'DESC';
+    } = {}
+  ): Promise<{ users: IUser[]; total: number }> {
+    let query = 'SELECT * FROM users WHERE 1=1';
+    const params: any[] = [];
+    
+    // Apply filters
+    if (filters.role) {
+      query += ' AND role = ?';
+      params.push(filters.role);
+    }
+    
+    if (filters.isActive !== undefined) {
+      query += ' AND isActive = ?';
+      params.push(filters.isActive ? 1 : 0);
+    }
+    
+    if (filters.search) {
+      query += ' AND (name LIKE ? OR email LIKE ?)';
+      params.push(`%${filters.search}%`, `%${filters.search}%`);
+    }
+    
+    // Get total count
+    const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as count');
+    const countResult: any[] = await executeQuery(countQuery, params);
+    const total = countResult[0].count;
+    
+    // Apply sorting and pagination
+    const sort = options.sort || 'createdAt';
+    const order = options.order || 'DESC';
+    query += ` ORDER BY ${sort} ${order}`;
+    
+    if (options.limit) {
+      const offset = ((options.page || 1) - 1) * options.limit;
+      query += ' LIMIT ? OFFSET ?';
+      params.push(options.limit, offset);
+    }
+    
+    const users: IUser[] = await executeQuery(query, params);
+    
+    // Parse settings for each user
+    users.forEach(user => {
+      if (user.settings && typeof user.settings === 'string') {
+        try {
+          user.settings = JSON.parse(user.settings);
+        } catch {
+          user.settings = undefined;
+        }
+      }
+    });
+    
+    return { users, total };
+  }
 
-if (mongoose.models && mongoose.models.User) {
-  User = mongoose.models.User as Model<IUser>;
-} else {
-  User = mongoose.model<IUser>("User", UserSchema);
+  // Update user
+  static async update(id: number, updates: Partial<IUser>): Promise<IUser | null> {
+    const allowedFields = [
+      'name', 'email', 'role', 'phone', 'address', 'isActive', 
+      'settings', 'lastLogin', 'resetPasswordToken', 'resetPasswordExpires'
+    ];
+    
+    const fields: string[] = [];
+    const params: any[] = [];
+    
+    Object.keys(updates).forEach(key => {
+      if (allowedFields.includes(key) && updates[key as keyof IUser] !== undefined) {
+        fields.push(`${key} = ?`);
+        
+        if (key === 'settings' && typeof updates[key as keyof IUser] === 'object') {
+          params.push(JSON.stringify(updates[key as keyof IUser]));
+        } else if (key === 'isActive') {
+          params.push(updates[key as keyof IUser] ? 1 : 0);
+        } else {
+          params.push(updates[key as keyof IUser]);
+        }
+      }
+    });
+    
+    if (fields.length === 0) return null;
+    
+    fields.push('updatedAt = NOW()');
+    params.push(id);
+    
+    const query = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
+    await executeQuery(query, params);
+    
+    return await User.findById(id);
+  }
+
+  // Delete user
+  static async delete(id: number): Promise<boolean> {
+    const query = 'DELETE FROM users WHERE id = ?';
+    const result: any = await executeQuery(query, [id]);
+    return result.affectedRows > 0;
+  }
+
+  // Compare password
+  static async comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+    return bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  // Update password
+  static async updatePassword(id: number, newPassword: string): Promise<boolean> {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const query = 'UPDATE users SET password = ?, updatedAt = NOW() WHERE id = ?';
+    const result: any = await executeQuery(query, [hashedPassword, id]);
+    return result.affectedRows > 0;
+  }
+
+  // Find by reset token
+  static async findByResetToken(token: string): Promise<IUser | null> {
+    const query = `
+      SELECT * FROM users 
+      WHERE resetPasswordToken = ? 
+      AND resetPasswordExpires > NOW()
+    `;
+    const users: IUser[] = await executeQuery(query, [token]);
+    return users.length > 0 ? users[0] : null;
+  }
 }
 
 export default User;

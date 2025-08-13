@@ -1,101 +1,158 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { ApiResponse } from '@/types/next-api';
-import { Session } from 'next-auth';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/auth';
+import { createNamespaceLogger } from './logger';
 
-/**
- * Utility function to create a standardized API response
- */
+const logger = createNamespaceLogger('api-utils');
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+}
+
 export function createApiResponse<T>(
   success: boolean,
   data?: T,
-  error?: string,
-  status: number = success ? 200 : 400
-): NextResponse {
+  message?: string,
+  status: number = 200
+): NextResponse<ApiResponse<T>> {
   const response: ApiResponse<T> = {
     success,
-    ...(data !== undefined && { data }),
-    ...(error !== undefined && { error }),
+    ...(data && { data }),
+    ...(message && success && { message }),
+    ...(message && !success && { error: message }),
   };
-  
+
   return NextResponse.json(response, { status });
 }
 
-/**
- * Utility function to handle authentication for API routes
- */
 export async function requireAuth(
-  req: NextRequest,
-  roles?: string[]
-): Promise<{ session: Session | null; error: NextResponse | null }> {
+  request: NextRequest,
+  allowedRoles?: string[]
+): Promise<{
+  session: any;
+  error?: NextResponse;
+}> {
   try {
-    const session = await auth();
-    
-    // Check if user is authenticated
+    const session = await getServerSession(authOptions);
+
     if (!session?.user) {
+      logger.warn('Unauthorized access attempt - no session');
       return {
         session: null,
-        error: createApiResponse(false, undefined, 'Authentication required', 401),
+        error: createApiResponse(false, undefined, 'Authentication required', 401)
       };
     }
-    
-    // Check if user has required role
-    if (roles && roles.length > 0 && !roles.includes(session.user.role)) {
+
+    if (!session.user.isActive) {
+      logger.warn('Inactive user access attempt', { userId: session.user.id });
       return {
-        session,
-        error: createApiResponse(false, undefined, 'Insufficient permissions', 403),
+        session: null,
+        error: createApiResponse(false, undefined, 'Account is inactive', 403)
       };
     }
-    
-    return { session, error: null };
+
+    if (allowedRoles && !allowedRoles.includes(session.user.role)) {
+      logger.warn('Insufficient permissions', { 
+        userId: session.user.id, 
+        role: session.user.role, 
+        allowedRoles 
+      });
+      return {
+        session: null,
+        error: createApiResponse(false, undefined, 'Insufficient permissions', 403)
+      };
+    }
+
+    return { session };
+
   } catch (error) {
+    logger.error('Authentication check failed', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
     return {
       session: null,
-      error: createApiResponse(
-        false,
-        undefined,
-        'Authentication error',
-        500
-      ),
+      error: createApiResponse(false, undefined, 'Authentication failed', 500)
     };
   }
 }
 
-/**
- * Utility function to handle API errors
- */
-export function handleApiError(error: unknown): NextResponse {
-  return createApiResponse(
-    false,
-    undefined,
-    error instanceof Error ? error.message : 'Internal server error',
-    500
-  );
+export function handleApiError(error: unknown, defaultMessage: string = 'Internal server error'): NextResponse {
+  logger.error('API Error', {
+    error: error instanceof Error ? error.message : 'Unknown error',
+    stack: error instanceof Error ? error.stack : undefined
+  });
+
+  if (error instanceof Error) {
+    // Handle specific error types
+    if (error.message.includes('validation')) {
+      return createApiResponse(false, undefined, 'Validation error', 400);
+    }
+    if (error.message.includes('duplicate') || error.message.includes('unique')) {
+      return createApiResponse(false, undefined, 'Resource already exists', 409);
+    }
+    if (error.message.includes('not found')) {
+      return createApiResponse(false, undefined, 'Resource not found', 404);
+    }
+  }
+
+  return createApiResponse(false, undefined, defaultMessage, 500);
 }
 
-/**
- * Type-safe function to extract params from route handler
- */
-export function getRouteParam<T extends string>(
-  params: Record<string, string | string[]>,
-  param: T
-): string | null {
-  const value = params[param];
-  return typeof value === 'string' ? value : null;
-} 
-
-/**
- * Standardized error response helper
- */
-export function apiError(message: string, status: number = 400, details?: any) {
-  return NextResponse.json({ error: message, ...(details ? { details } : {}) }, { status });
+export function validateRequiredFields(data: any, requiredFields: string[]): string | null {
+  for (const field of requiredFields) {
+    if (!data[field] || (typeof data[field] === 'string' && data[field].trim() === '')) {
+      return `Field '${field}' is required`;
+    }
+  }
+  return null;
 }
 
-/**
- * Ownership check utility for agent resources
- * Throws or returns false if not owner
- */
-export function checkAgentOwnership(resourceAgentId: any, sessionUserId: any): boolean {
-  if (!resourceAgentId || !sessionUserId) return false;
-  return resourceAgentId.toString() === sessionUserId.toString();
-} 
+export function sanitizeUser(user: any) {
+  if (!user) return null;
+  
+  const { password, resetPasswordToken, resetPasswordExpires, ...sanitized } = user;
+  return sanitized;
+}
+
+export function getPaginationParams(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  
+  return {
+    page: Math.max(1, parseInt(searchParams.get('page') || '1')),
+    limit: Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10'))),
+    sort: searchParams.get('sort') || 'createdAt',
+    order: (searchParams.get('order')?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC') as 'ASC' | 'DESC'
+  };
+}
+
+export function createPaginationResponse(
+  data: any[],
+  total: number,
+  page: number,
+  limit: number
+) {
+  const totalPages = Math.ceil(total / limit);
+  
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1
+    }
+  };
+}

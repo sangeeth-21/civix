@@ -1,54 +1,16 @@
-import mongoose, { Document, Schema } from "mongoose";
+import { executeQuery } from "@/lib/mysql";
 
-export interface IAuditLog extends Document {
-  userId: mongoose.Types.ObjectId;
+export interface IAuditLog {
+  id: number;
+  userId: number;
   action: string;
-  entityId?: mongoose.Types.ObjectId;
+  entityId?: number;
   entityType?: string;
-  details?: Record<string, any>;
+  details?: string; // JSON string
   ipAddress?: string;
   userAgent?: string;
   createdAt: Date;
 }
-
-const AuditLogSchema = new Schema(
-  {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    action: {
-      type: String,
-      required: true,
-      index: true,
-    },
-    entityId: {
-      type: Schema.Types.ObjectId,
-      index: true,
-    },
-    entityType: {
-      type: String,
-      index: true,
-    },
-    details: {
-      type: Object,
-    },
-    ipAddress: {
-      type: String,
-    },
-    userAgent: {
-      type: String,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-  {
-    timestamps: false, // We only care about creation time
-  }
-);
 
 // Define common audit actions as constants
 export const AuditActions = {
@@ -81,12 +43,145 @@ export const AuditActions = {
   ROLE_CHANGED: "ROLE_CHANGED",
 };
 
+export class AuditLog {
+  // Create audit log entry
+  static async create(auditData: Omit<IAuditLog, 'id' | 'createdAt'>): Promise<IAuditLog> {
+    try {
+      const query = `
+        INSERT INTO audit_logs (
+          userId, action, entityId, entityType, details, ipAddress, userAgent
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      `;
+      
+      const params = [
+        auditData.userId,
+        auditData.action,
+        auditData.entityId || null,
+        auditData.entityType || null,
+        auditData.details || null,
+        auditData.ipAddress || null,
+        auditData.userAgent || null
+      ];
+      
+      const result: any = await executeQuery(query, params);
+      return await AuditLog.findById(result.insertId);
+    } catch (error) {
+      // Non-blocking - we don't want to fail operations if audit logging fails
+      console.warn('Audit log creation failed:', error);
+      return null;
+    }
+  }
+
+  // Find audit log by ID
+  static async findById(id: number): Promise<IAuditLog | null> {
+    const query = 'SELECT * FROM audit_logs WHERE id = ?';
+    const logs: IAuditLog[] = await executeQuery(query, [id]);
+    
+    if (logs.length === 0) return null;
+    
+    const log = logs[0];
+    if (log.details && typeof log.details === 'string') {
+      try {
+        log.details = JSON.parse(log.details);
+      } catch {
+        log.details = undefined;
+      }
+    }
+    
+    return log;
+  }
+
+  // Find audit logs with filters and pagination
+  static async find(
+    filters: {
+      userId?: number;
+      action?: string;
+      entityType?: string;
+      dateFrom?: Date;
+      dateTo?: Date;
+    } = {},
+    options: {
+      page?: number;
+      limit?: number;
+      sort?: string;
+      order?: 'ASC' | 'DESC';
+    } = {}
+  ): Promise<{ logs: IAuditLog[]; total: number }> {
+    let query = 'SELECT * FROM audit_logs WHERE 1=1';
+    const params: any[] = [];
+    
+    // Apply filters
+    if (filters.userId) {
+      query += ' AND userId = ?';
+      params.push(filters.userId);
+    }
+    
+    if (filters.action) {
+      query += ' AND action = ?';
+      params.push(filters.action);
+    }
+    
+    if (filters.entityType) {
+      query += ' AND entityType = ?';
+      params.push(filters.entityType);
+    }
+    
+    if (filters.dateFrom) {
+      query += ' AND createdAt >= ?';
+      params.push(filters.dateFrom);
+    }
+    
+    if (filters.dateTo) {
+      query += ' AND createdAt <= ?';
+      params.push(filters.dateTo);
+    }
+    
+    // Get total count
+    const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as count');
+    const countResult: any[] = await executeQuery(countQuery, params);
+    const total = countResult[0].count;
+    
+    // Apply sorting and pagination
+    const sort = options.sort || 'createdAt';
+    const order = options.order || 'DESC';
+    query += ` ORDER BY ${sort} ${order}`;
+    
+    if (options.limit) {
+      const offset = ((options.page || 1) - 1) * options.limit;
+      query += ' LIMIT ? OFFSET ?';
+      params.push(options.limit, offset);
+    }
+    
+    const logs: IAuditLog[] = await executeQuery(query, params);
+    
+    // Parse details for each log
+    logs.forEach(log => {
+      if (log.details && typeof log.details === 'string') {
+        try {
+          log.details = JSON.parse(log.details);
+        } catch {
+          log.details = undefined;
+        }
+      }
+    });
+    
+    return { logs, total };
+  }
+
+  // Delete old logs (cleanup)
+  static async cleanup(olderThanDays: number = 90): Promise<number> {
+    const query = 'DELETE FROM audit_logs WHERE createdAt < DATE_SUB(NOW(), INTERVAL ? DAY)';
+    const result: any = await executeQuery(query, [olderThanDays]);
+    return result.affectedRows;
+  }
+}
+
 // Create audit log utility function
 export const createAuditLog = async (
-  userId: string | mongoose.Types.ObjectId,
+  userId: number,
   action: string,
   data: {
-    entityId?: string | mongoose.Types.ObjectId;
+    entityId?: number;
     entityType?: string;
     details?: Record<string, any>;
     ipAddress?: string;
@@ -94,35 +189,20 @@ export const createAuditLog = async (
   }
 ) => {
   try {
-    // Check if AuditLog model is available
-    if (!AuditLog) {
-      return null;
-    }
-    
     return await AuditLog.create({
       userId,
       action,
-      ...data,
+      entityId: data.entityId,
+      entityType: data.entityType,
+      details: data.details ? JSON.stringify(data.details) : undefined,
+      ipAddress: data.ipAddress,
+      userAgent: data.userAgent,
     });
   } catch (error) {
     // Non-blocking - we don't want to fail operations if audit logging fails
+    console.warn('Audit log creation failed:', error);
     return null;
   }
 };
 
-// Safe model creation that works in both Node.js and Edge runtime
-const AuditLog: mongoose.Model<IAuditLog> | null = (() => {
-  try {
-    // Check if we're in an environment where mongoose.models is available
-    if (mongoose.models && mongoose.models.AuditLog) {
-      return mongoose.models.AuditLog as mongoose.Model<IAuditLog>;
-    }
-    return mongoose.model<IAuditLog>("AuditLog", AuditLogSchema);
-  } catch (error) {
-    // In edge runtime or other environments where mongoose.models is not available
-    // Return a mock model that won't break the import
-    return null;
-  }
-})();
-
-export default AuditLog; 
+export default AuditLog;

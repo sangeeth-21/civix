@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { createNamespaceLogger } from "@/lib/logger";
-import connectDB from "@/lib/db";
-import User from "@/models/User";
+import { User } from "@/models/User";
 import { AuditActions, createAuditLog } from "@/models/AuditLog";
+import { createApiResponse, requireAuth, handleApiError, getPaginationParams, createPaginationResponse, sanitizeUser } from "@/lib/api-utils";
 import { z } from "zod";
 
 const logger = createNamespaceLogger("api:admin:users");
@@ -15,7 +16,7 @@ const QuerySchema = z.object({
   role: z.enum(["USER", "AGENT", "ADMIN", "SUPER_ADMIN"]).optional(),
   search: z.string().optional(),
   sort: z.string().optional().default("createdAt"),
-  order: z.enum(["asc", "desc"]).optional().default("desc"),
+  order: z.enum(["ASC", "DESC"]).optional().default("DESC"),
 });
 
 // Schema for user update
@@ -31,21 +32,9 @@ const UserUpdateSchema = z.object({
 // GET handler for listing users
 export async function GET(req: NextRequest) {
   try {
-    // Check authentication
-    const session = await auth();
-    
-    // Verify user is authenticated and has admin role
-    if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
-      logger.warn("Unauthorized access attempt to admin users API", {
-        userId: session?.user?.id || "unauthenticated",
-        userRole: session?.user?.role || "none",
-      });
-      
-      return NextResponse.json(
-        { error: "Unauthorized access" },
-        { status: 403 }
-      );
-    }
+    // Check authentication and authorization
+    const { session, error } = await requireAuth(req, ["ADMIN", "SUPER_ADMIN"]);
+    if (error) return error;
     
     // Parse query parameters
     const url = new URL(req.url);
@@ -60,140 +49,100 @@ export async function GET(req: NextRequest) {
       order
     } = QuerySchema.parse(queryParams);
     
-    // Connect to database
-    await connectDB();
-    
-    // Build query
-    const query: Record<string, unknown> = {};
+    // Build filters
+    const filters: any = {};
     
     // Add role filter if provided
     if (role) {
-      query.role = role;
+      filters.role = role;
     }
     
     // Add search filter if provided
     if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-      ];
+      filters.search = search;
     }
     
-    // Calculate pagination
-    const skip = (page - 1) * limit;
-    
-    // Determine sort direction
-    const sortDirection = order === "asc" ? 1 : -1;
-    const sortOptions: { [key: string]: 1 | -1 } = {};
-    sortOptions[sort] = sortDirection as 1 | -1;
-    
-    // Execute query with pagination
-    const [users, totalCount] = await Promise.all([
-      User.find(query)
-        .select("-password")
-        .sort(sortOptions)
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      User.countDocuments(query),
-    ]);
-    
-    // Calculate pagination metadata
-    const totalPages = Math.ceil(totalCount / limit);
-    
-    logger.info("Admin users list retrieved successfully", {
-      userId: session.user.id,
+    // Find users with filters and pagination
+    const { users, total } = await User.find(filters, {
       page,
       limit,
-      totalCount,
+      sort,
+      order
+    });
+    
+    // Sanitize users (remove password and sensitive fields)
+    const sanitizedUsers = users.map(sanitizeUser);
+    
+    logger.info("Admin users list retrieved successfully", {
+      userId: session!.user.id,
+      page,
+      limit,
+      totalCount: total,
       filters: { role, search },
     });
     
-    return NextResponse.json({
-      data: users,
-      pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-      },
-    });
+    return createApiResponse(
+      true,
+      createPaginationResponse(sanitizedUsers, total, page, limit)
+    );
     
   } catch (error) {
     if (error instanceof z.ZodError) {
       logger.warn("Invalid query parameters", {
         error: "Zod validation failed",
+        issues: error.issues
       });
       
-      return NextResponse.json(
-        { error: "Invalid query parameters" },
-        { status: 400 }
+      return createApiResponse(
+        false,
+        undefined,
+        "Invalid query parameters",
+        400
       );
     }
     
-    logger.error("Error fetching users list", {
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-    
-    return NextResponse.json(
-      { error: "Failed to fetch users" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to fetch users");
   }
 }
 
 // PATCH handler for updating a user
 export async function PATCH(req: NextRequest) {
   try {
-    // Check authentication
-    const session = await auth();
-    
-    // Verify user is authenticated and has admin role
-    if (!session?.user || !["ADMIN", "SUPER_ADMIN"].includes(session.user.role)) {
-      logger.warn("Unauthorized access attempt to update user", {
-        userId: session?.user?.id || "unauthenticated",
-        userRole: session?.user?.role || "none",
-      });
-      
-      return NextResponse.json(
-        { error: "Unauthorized access" },
-        { status: 403 }
-      );
-    }
+    // Check authentication and authorization
+    const { session, error } = await requireAuth(req, ["ADMIN", "SUPER_ADMIN"]);
+    if (error) return error;
     
     // Parse request body
     const body = await req.json();
     
     // Validate userId parameter
     const userId = body.userId;
-    if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 }
+    if (!userId || isNaN(parseInt(userId))) {
+      return createApiResponse(
+        false,
+        undefined,
+        "Valid User ID is required",
+        400
       );
     }
     
     // Validate update data
     const updateData = UserUpdateSchema.parse(body.data);
     
-    // Connect to database
-    await connectDB();
-    
     // Find user to update
-    const user = await User.findById(userId);
+    const user = await User.findById(parseInt(userId));
     
     if (!user) {
       logger.warn("User not found for update", {
-        adminId: session.user.id,
+        adminId: session!.user.id,
         targetUserId: userId,
       });
       
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
+      return createApiResponse(
+        false,
+        undefined,
+        "User not found",
+        404
       );
     }
     
@@ -202,87 +151,193 @@ export async function PATCH(req: NextRequest) {
       user.role === "SUPER_ADMIN" &&
       updateData.role && 
       updateData.role !== "SUPER_ADMIN" && 
-      session.user.role !== "SUPER_ADMIN"
+      session!.user.role !== "SUPER_ADMIN"
     ) {
       logger.warn("Attempt to downgrade SUPER_ADMIN by non-SUPER_ADMIN", {
-        adminId: session.user.id,
-        adminRole: session.user.role,
+        adminId: session!.user.id,
+        adminRole: session!.user.role,
         targetUserId: userId,
       });
       
-      return NextResponse.json(
-        { error: "Cannot change role of SUPER_ADMIN" },
-        { status: 403 }
+      return createApiResponse(
+        false,
+        undefined,
+        "Cannot change role of SUPER_ADMIN",
+        403
       );
     }
     
     // Track changes for audit log
     const changes: Record<string, { before: unknown; after: unknown }> = {};
     
-    // Apply updates
+    // Identify changes
     Object.keys(updateData).forEach(key => {
-      if (updateData[key as keyof typeof updateData] !== undefined) {
-        // Record change
-        const before = (user as unknown as Record<string, unknown>)[key];
-        const after = updateData[key as keyof typeof updateData];
-        changes[key] = { before, after };
-        
-        // Apply change with proper typing
-        (user as unknown as Record<string, unknown>)[key] = after;
+      const newValue = updateData[key as keyof typeof updateData];
+      const oldValue = user[key as keyof typeof user];
+      
+      if (newValue !== undefined && newValue !== oldValue) {
+        changes[key] = { before: oldValue, after: newValue };
       }
     });
     
-    // Save updated user
-    await user.save();
+    if (Object.keys(changes).length === 0) {
+      return createApiResponse(
+        false,
+        undefined,
+        "No changes detected",
+        400
+      );
+    }
+    
+    // Update user
+    const updatedUser = await User.update(parseInt(userId), updateData);
+    
+    if (!updatedUser) {
+      return createApiResponse(
+        false,
+        undefined,
+        "Failed to update user",
+        500
+      );
+    }
     
     // Create audit log
     await createAuditLog(
-      session.user.id,
+      parseInt(session!.user.id),
       AuditActions.USER_UPDATED,
       {
-        entityId: userId,
+        entityId: parseInt(userId),
         entityType: "User",
         details: {
           changes,
-          updatedBy: session.user.id,
+          updatedBy: session!.user.id,
         },
       }
     );
     
     logger.info("User updated successfully by admin", {
-      adminId: session.user.id,
+      adminId: session!.user.id,
       targetUserId: userId,
       changes: Object.keys(changes),
     });
     
-    // Return updated user without password
-    const updatedUser = await User.findById(userId).select("-password");
-    
-    return NextResponse.json({
-      message: "User updated successfully",
-      data: updatedUser,
-    });
+    // Return sanitized updated user
+    return createApiResponse(
+      true,
+      sanitizeUser(updatedUser),
+      "User updated successfully"
+    );
     
   } catch (error) {
     if (error instanceof z.ZodError) {
       logger.warn("Invalid update data", {
         error: "Zod validation failed",
+        issues: error.issues
       });
       
-      return NextResponse.json(
-        { error: "Invalid update data" },
-        { status: 400 }
+      return createApiResponse(
+        false,
+        undefined,
+        "Invalid update data",
+        400
       );
     }
     
-    logger.error("Error updating user", {
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
+    return handleApiError(error, "Failed to update user");
+  }
+}
+
+// DELETE handler for deleting a user
+export async function DELETE(req: NextRequest) {
+  try {
+    // Check authentication and authorization
+    const { session, error } = await requireAuth(req, ["ADMIN", "SUPER_ADMIN"]);
+    if (error) return error;
+    
+    // Get userId from query parameters
+    const url = new URL(req.url);
+    const userId = url.searchParams.get('userId');
+    
+    if (!userId || isNaN(parseInt(userId))) {
+      return createApiResponse(
+        false,
+        undefined,
+        "Valid User ID is required",
+        400
+      );
+    }
+    
+    // Find user to delete
+    const user = await User.findById(parseInt(userId));
+    
+    if (!user) {
+      return createApiResponse(
+        false,
+        undefined,
+        "User not found",
+        404
+      );
+    }
+    
+    // Prevent deleting SUPER_ADMIN unless by another SUPER_ADMIN
+    if (user.role === "SUPER_ADMIN" && session!.user.role !== "SUPER_ADMIN") {
+      return createApiResponse(
+        false,
+        undefined,
+        "Cannot delete SUPER_ADMIN account",
+        403
+      );
+    }
+    
+    // Prevent users from deleting themselves
+    if (user.id === parseInt(session!.user.id)) {
+      return createApiResponse(
+        false,
+        undefined,
+        "Cannot delete your own account",
+        400
+      );
+    }
+    
+    // Delete user
+    const deleted = await User.delete(parseInt(userId));
+    
+    if (!deleted) {
+      return createApiResponse(
+        false,
+        undefined,
+        "Failed to delete user",
+        500
+      );
+    }
+    
+    // Create audit log
+    await createAuditLog(
+      parseInt(session!.user.id),
+      AuditActions.USER_DELETED,
+      {
+        entityId: parseInt(userId),
+        entityType: "User",
+        details: {
+          deletedUser: sanitizeUser(user),
+          deletedBy: session!.user.id,
+        },
+      }
+    );
+    
+    logger.info("User deleted successfully by admin", {
+      adminId: session!.user.id,
+      deletedUserId: userId,
+      deletedUserEmail: user.email
     });
     
-    return NextResponse.json(
-      { error: "Failed to update user" },
-      { status: 500 }
+    return createApiResponse(
+      true,
+      undefined,
+      "User deleted successfully"
     );
+    
+  } catch (error) {
+    return handleApiError(error, "Failed to delete user");
   }
-} 
+}

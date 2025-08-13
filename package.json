@@ -8,8 +8,8 @@
     "start": "cross-env PORT=80 next start",
     "lint": "next lint",
     "setup:env": "node scripts/setup-env.js",
-    "setup:local-mongodb": "node scripts/setup-local-mongodb.js",
-    "test:mongodb": "node scripts/test-mongodb-connection.js",
+    "setup:local-mysql": "node scripts/setup-local-mysql.js",
+    "test:mysql": "node scripts/test-mysql-connection.js",
     "verify:auth": "node scripts/verify-auth-config.js",
     "reset:password": "node scripts/reset-user-password.js",
     "seed:admins": "node scripts/seed-admin-users.js",
@@ -27,7 +27,6 @@
     "deploy:staging": "pm2 deploy ecosystem.config.js staging"
   },
   "dependencies": {
-    "@auth/mongodb-adapter": "^3.10.0",
     "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -56,8 +55,7 @@
     "framer-motion": "^12.23.6",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.525.0",
-    "mongodb": "^6.17.0",
-    "mongoose": "^8.16.4",
+    "mysql2": "^3.14.3",
     "next": "15.4.2",
     "next-auth": "^5.0.0-beta.29",
     "next-themes": "^0.4.6",

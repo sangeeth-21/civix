@@ -1,4 +1,4 @@
-// File: /Users/macbook/Desktop/personal-workspace/civix/app/page.tsx
+// File: /Users/macbook/Desktop/personal-workspace/civix-sql/app/page.tsx
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
